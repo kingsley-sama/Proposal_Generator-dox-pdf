@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "Convert HTML proposal to editable DOCX document",
   "main": "proposal-to-docx.js",
+  "type": "commonjs",
   "scripts": {
-    "convert": "node convert-cli.js",
-    "convert-simple": "node html-to-docx.js",
-    "convert-advanced": "node proposal-to-docx.js",
-    "test": "node proposal-to-docx.js",
-    "server": "node proposal-server.js",
-    "start": "node proposal-server.js"
+    "convert": "nodemon convert-cli.js",
+    "convert-simple": "nodemon html-to-docx.js",
+    "convert-advanced": "nodemon proposal-to-docx.js",
+    "test": "nodemon proposal-to-docx.js",
+    "server": "nodemon proposal-server.js",
+    "start": "nodemon proposal-server.js"
   },
   "keywords": [
     "html",
@@ -21,13 +22,16 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.84.0",
     "axios": "^1.13.2",
     "cors": "^2.8.5",
     "docx": "^8.5.0",
+    "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "fs-extra": "^11.1.1",
     "html-to-docx": "^1.1.0",
     "jsdom": "^27.1.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "nodemon": "^3.1.11"
   }
 }

@@ -1,6 +1,7 @@
 const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, ImageRun, VerticalAlign, ShadingType, Footer, HeadingLevel, ExternalHyperlink } = require('docx');
 const fs = require('fs');
 const path = require('path');
+const serviceDescriptions = require('./service_description.js');
 
 /**
  * Pure DOCX Proposal Generator - Complete V1 Implementation
@@ -24,15 +25,13 @@ class PureDocxProposalGenerator {
       totalVat: data.totalVat || '0,00',
       totalGrossPrice: data.totalGrossPrice || '0,00',
       signatureName: data.signatureName || 'Christopher Helm',
-      // Images array: [{title, description, imagePath}]
       images: data.images || [],
-      // Service items for dynamic pricing
       services: data.services || [],
     };
     this.offerNumber = `2025-${this.data.MM}-${this.data.DD}-1`;
     
-    // Service descriptions mapping
-    this.serviceDescriptions = this.getServiceDescriptions();
+    // Use imported serviceDescriptions instead of local definition
+    this.serviceDescriptions = serviceDescriptions;
     
     // Calculate pricing if services are provided
     if (this.data.services.length > 0) {
@@ -41,117 +40,16 @@ class PureDocxProposalGenerator {
   }
 
   /**
-   * Get service descriptions for dynamic table generation
+   * Find service info by name (searches through imported serviceDescriptions)
    */
-  getServiceDescriptions() {
-    return {
-      '3D-Außenvisualisierung Bodenperspektive': {
-        description: [
-          'Fotorealistische 3D-Visualisierung aus Bodenperspektive',
-          'Hochauflösende Darstellung (min. 3000px)',
-          'Professionelle Lichtsetzung und Materialisierung',
-          'Umgebungsgestaltung mit Vegetation und Kontext'
-        ],
-        link: 'https://www.exposeprofi.de/3d-visualisierungen/architekturvisualisierungen'
-      },
-      '3D-Außenvisualisierung Vogelperspektive': {
-        description: [
-          'Fotorealistische Vogelperspektive',
-          'Ideal für Gesamtübersicht des Projekts',
-          'Nur in Kombination mit Bodenperspektiven'
-        ]
-      },
-      '3D-Grundriss': {
-        description: [
-          'Fotorealistischer 3D-Grundriss',
-          'Möblierte Darstellung',
-          'Hochauflösende Qualität'
-        ],
-        link: 'https://www.exposeprofi.de/3d-grundrisse'
-      },
-      '3D-Geschossansicht': {
-        description: [
-          'Komplette 3D-Ansicht eines Geschosses',
-          'Alle Wohnungen in einem Geschoss',
-          'Möblierte Darstellung'
-        ]
-      },
-      '2D-Grundriss': {
-        description: [
-          'Professioneller 2D-Grundriss',
-          'Bemaßung und Flächenangaben',
-          'Druckfertige Qualität'
-        ],
-        link: 'https://www.exposeprofi.de/2d-grundrisse'
-      },
-      'Digital Home Staging': {
-        description: [
-          'Digitale Möblierung leerer Räume',
-          'Fotorealistische Integration',
-          'Verschiedene Einrichtungsstile'
-        ],
-        link: 'https://www.exposeprofi.de/home-staging'
-      },
-      'Digitale Renovierung': {
-        description: [
-          'Digitale Aufbereitung alter Räume',
-          'Visualisierung von Renovierungspotential',
-          'Fotorealistische Darstellung'
-        ]
-      },
-      '360° Tour Innen': {
-        description: [
-          'Interaktive 360° Innenraumtour',
-          'Navigation durch alle Räume',
-          'Einbettbar auf Website'
-        ],
-        link: 'https://www.exposeprofi.de/360-grad-touren'
-      },
-      '360° Video Außen': {
-        description: [
-          '360° Außenansicht Video',
-          'Nur mit min. 2x 3D-Außenvisualisierung',
-          'Preis auf Anfrage'
-        ]
-      },
-      'Slideshow Video': {
-        description: [
-          'Professionelles Slideshow-Video',
-          'Musik und Übergänge',
-          'Ideal für Social Media'
-        ]
-      },
-      '3D-Lageplan': {
-        description: [
-          '3D-Darstellung der Lage',
-          'Umgebungskontext',
-          'Verkehrsanbindung'
-        ]
-      },
-      'Social Media Paket': {
-        description: [
-          'Optimierte Bilder für Social Media',
-          'Verschiedene Formate',
-          'Stories und Posts'
-        ]
-      },
-      '3D-Innenvisualisierung': {
-        description: [
-          'Fotorealistische Innenraumvisualisierung',
-          'Hochauflösende Darstellung',
-          'Professionelle Lichtsetzung',
-          'Verschiedene Perspektiven möglich'
-        ],
-        link: 'https://www.exposeprofi.de/3d-visualisierungen/innenvisualisierungen'
-      },
-      '3D-Visualisierung Terrasse': {
-        description: [
-          'Fotorealistische Terrassenvisualisierung',
-          'Mit Möblierung und Bepflanzung',
-          'Preis auf Anfrage'
-        ]
+  findServiceByName(serviceName) {
+    // Search through serviceDescriptions to find matching name
+    for (const [serviceId, serviceData] of Object.entries(this.serviceDescriptions)) {
+      if (serviceData.name === serviceName) {
+        return serviceData;
       }
-    };
+    }
+    return null;
   }
 
   /**
@@ -466,7 +364,7 @@ class PureDocxProposalGenerator {
     const rows = [];
 
     this.data.services.forEach((service, index) => {
-      const serviceInfo = this.serviceDescriptions[service.name];
+      const serviceInfo = this.findServiceByName(service.name);
       
       // Always start with default description
       const defaultDescription = serviceInfo ? serviceInfo.description : [];
@@ -478,6 +376,7 @@ class PureDocxProposalGenerator {
         ...customDescription
       ];
       
+      // Note: link property may not exist in new service_description.js
       const link = serviceInfo ? serviceInfo.link : null;
 
       rows.push(
