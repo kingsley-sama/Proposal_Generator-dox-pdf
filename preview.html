@@ -1,18 +1,16 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Proposal Preview - ExposeProfi.de</title>
   <style>
-    /* ========== RESET ========== */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
 
-    /* ========== PREVIEW TOOLBAR ========== */
     .preview-toolbar {
       position: fixed;
       top: 0;
@@ -193,7 +191,7 @@
       border-collapse: collapse;
       margin-bottom: 24px;
       font-size: 9pt;
-      page-break-inside: auto;
+      page-break-inside: auto;/* ========== PREVIEW TOOLBAR ========== */
     }
 
     tr {
@@ -298,6 +296,19 @@
       list-style-type: circle;
     }
 
+    /* Third level bullets (sub-sub-bullets) */
+    .sub-bullet .sub-bullet {
+      margin-left: 20px;
+      list-style-type: square;
+    }
+
+    /* Fourth level bullets (max depth) */
+    .sub-bullet .sub-bullet .sub-bullet {
+      margin-left: 20px;
+      list-style-type: disc;
+      font-size: 9pt;
+    }
+
     .bullet-controls {
       display: inline-flex;
       gap: 4px;
@@ -356,6 +367,33 @@
 
     .add-bullet-btn:hover {
       background: #059669;
+    }
+
+    /* Pricing tiers */
+    .pricing-tiers {
+      margin-top: 12px;
+      padding: 8px;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 8.5pt;
+    }
+
+    .pricing-tiers-title {
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 9pt;
+      color: #495057;
+    }
+
+    .pricing-tier-item {
+      padding: 2px 0;
+      line-height: 1.4;
+      color: #212529;
+    }
+
+    .pricing-tier-item:hover {
+      background-color: #e9ecef;
     }
 
     /* Editable last page fields */
@@ -858,8 +896,29 @@
     const serviceDescriptions = {
       'exterior-ground': {
         name: '3D-Außenvisualisierung Bodenperspektive',
+        defaultPrice: 450.00,
         description: [
-          'Fotorealistische 3D-Visualisierung aus Bodenperspektive',
+          {
+            text: 'Fotorealistische 3D-Visualisierung aus Bodenperspektive',
+            children: [
+              {
+                text: 'Ideal für Fassaden- und Eingangsbereichsdarstellung',
+                children: [
+                  'Maximale Detailgenauigkeit bei Materialien',
+                  'Realistische Licht- und Schatteneffekte'
+                ]
+              },
+              {
+                text: 'Hervorhebung von Materialien und Texturen',
+                children: [
+                  'Holz, Stein, Glas und Metall',
+                  'Wetterbeständige Oberflächen'
+                ]
+              },
+              'Betont architektonische Details',
+              'Zeigt Interaktion mit Umgebung'
+            ]
+          },
           'Hochauflösende Darstellung (min. 3000px)',
           'Professionelle Lichtsetzung und Materialisierung',
           'Umgebungsgestaltung mit Vegetation und Kontext'
@@ -867,6 +926,7 @@
       },
       'exterior-bird': {
         name: '3D-Außenvisualisierung Vogelperspektive',
+        defaultPrice: 350.00,
         description: [
           'Fotorealistische Vogelperspektive',
           'Ideal für Gesamtübersicht des Projekts',
@@ -875,6 +935,7 @@
       },
       '3d-floorplan': {
         name: '3D-Grundriss',
+        defaultPrice: 299.00,
         description: [
           'Fotorealistischer 3D-Grundriss',
           'Möblierte Darstellung',
@@ -899,6 +960,7 @@
       },
       'home-staging': {
         name: 'Digital Home Staging',
+        defaultPrice: 89.00,
         description: [
           'Digitale Möblierung leerer Räume',
           'Fotorealistische Integration',
@@ -960,6 +1022,18 @@
           'Hochauflösende Darstellung',
           'Professionelle Lichtsetzung',
           'Verschiedene Perspektiven möglich'
+        ],
+        pricingTiers: [
+          { quantity: 1, price: 399.00, label: '1 Ansicht Netto: 399,00 €' },
+          { quantity: 2, price: 299.00, label: '2 Ansichten: Netto pro Ansicht: 299,00 €' },
+          { quantity: 3, price: 289.00, label: '3 Ansichten: Netto pro Ansicht: 289,00 €' },
+          { quantity: 4, price: 269.00, label: '4 Ansichten: Netto pro Ansicht: 269,00 €' },
+          { quantity: 5, price: 259.00, label: '5 Ansichten: Netto pro Ansicht: 259,00 €' },
+          { quantity: 6, price: 249.00, label: '6 Ansichten: Netto pro Ansicht: 249,00 €' },
+          { quantity: 7, price: 239.00, label: '7 Ansichten: Netto pro Ansicht: 239,00 €' },
+          { quantity: 8, price: 229.00, label: '8 Ansichten: Netto pro Ansicht: 229,00 €' },
+          { quantity: 9, price: 219.00, label: '9 Ansichten: Netto pro Ansicht: 219,00 €' },
+          { quantity: 10, price: 199.00, label: '>=10 Ansichten: Netto pro Ansicht: 199,00 €' }
         ]
       },
       'terrace': {
@@ -1103,41 +1177,24 @@
         cellDescription.className = 'col-description';
         cellDescription.dataset.serviceIndex = index;
         
-        // Always start with default description, then add custom ones below
-        const defaultDescription = serviceInfo ? serviceInfo.description : [];
+        // Use modifiedDefaults if available, otherwise use original defaults
+        const defaultDescription = service.modifiedDefaults || (serviceInfo ? serviceInfo.description : []);
         const customDescription = service.customDescription || [];
         
         if (defaultDescription.length > 0 || customDescription.length > 0) {
           const ul = document.createElement('ul');
           ul.dataset.serviceIndex = index;
           
-          // Add default bullets (deletable now)
+          // Add default bullets (now editable and deletable)
           defaultDescription.forEach((desc, descIndex) => {
-            const li = createBulletItem(desc, index, descIndex, true, false);
+            const li = createBulletItemRecursive(desc, index, `default-${descIndex}`, true, 0);
             ul.appendChild(li);
           });
           
           // Add custom bullets (deletable)
           customDescription.forEach((desc, descIndex) => {
-            // Handle sub-bullets (if desc is an object with children)
-            if (typeof desc === 'object' && desc.text) {
-              const li = createBulletItem(desc.text, index, defaultDescription.length + descIndex, true, false);
-              
-              // Add sub-bullets if they exist
-              if (desc.children && desc.children.length > 0) {
-                const subUl = document.createElement('ul');
-                subUl.className = 'sub-bullet';
-                desc.children.forEach((subDesc, subIndex) => {
-                  const subLi = createBulletItem(subDesc, index, `${defaultDescription.length + descIndex}-${subIndex}`, true, true);
-                  subUl.appendChild(subLi);
-                });
-                li.appendChild(subUl);
-              }
-              ul.appendChild(li);
-            } else {
-              const li = createBulletItem(desc, index, defaultDescription.length + descIndex, true, false);
-              ul.appendChild(li);
-            }
+            const li = createBulletItemRecursive(desc, index, `custom-${descIndex}`, true, 0);
+            ul.appendChild(li);
           });
           
           cellDescription.appendChild(ul);
@@ -1153,6 +1210,37 @@
           hint.className = 'edit-hint';
           hint.textContent = 'Click to edit, use buttons to add/delete';
           cellDescription.appendChild(hint);
+          
+          // Add pricing information if available
+          if (serviceInfo) {
+            // Show pricing tiers if available
+            if (serviceInfo.pricingTiers) {
+              const pricingDiv = document.createElement('div');
+              pricingDiv.className = 'pricing-tiers';
+              
+              const title = document.createElement('div');
+              title.className = 'pricing-tiers-title';
+              title.textContent = 'Preisstaffelung:';
+              pricingDiv.appendChild(title);
+              
+              serviceInfo.pricingTiers.forEach(tier => {
+                const tierItem = document.createElement('div');
+                tierItem.className = 'pricing-tier-item';
+                tierItem.textContent = tier.label;
+                pricingDiv.appendChild(tierItem);
+              });
+              
+              cellDescription.appendChild(pricingDiv);
+            }
+            // Show default price note if set and no tiers
+            else if (serviceInfo.defaultPrice) {
+              const priceNote = document.createElement('div');
+              priceNote.className = 'pricing-tiers';
+              priceNote.style.fontSize = '9pt';
+              priceNote.innerHTML = `<strong>Standardpreis:</strong> ${serviceInfo.defaultPrice.toFixed(2)} € pro Einheit`;
+              cellDescription.appendChild(priceNote);
+            }
+          }
         } else {
           cellDescription.textContent = 'Beschreibung nicht verfügbar';
         }
@@ -1178,7 +1266,77 @@
       });
     }
 
-    // Create bullet item with controls
+    // Create bullet item recursively with up to 2 levels of nesting
+    function createBulletItemRecursive(item, serviceIndex, bulletIndex, isDeletable, level) {
+      const li = document.createElement('li');
+      
+      // Get the text (item could be string or object with text property)
+      const text = typeof item === 'string' ? item : item.text;
+      
+      const bulletSpan = document.createElement('span');
+      bulletSpan.className = 'editable-bullet';
+      bulletSpan.contentEditable = 'true';
+      bulletSpan.textContent = text;
+      bulletSpan.dataset.serviceIndex = serviceIndex;
+      bulletSpan.dataset.bulletIndex = bulletIndex;
+      bulletSpan.dataset.level = level;
+      bulletSpan.addEventListener('blur', updateBulletPoint);
+      bulletSpan.addEventListener('keydown', handleEnterKey);
+      li.appendChild(bulletSpan);
+      
+      // Add controls
+      if (isDeletable) {
+        const controls = document.createElement('span');
+        controls.className = 'bullet-controls';
+        
+        // Add sub-bullet button (only if we're not at max depth of 3)
+        if (level < 3) {
+          const addSubBtn = document.createElement('button');
+          addSubBtn.className = 'bullet-btn add-sub';
+          addSubBtn.textContent = '+ Sub';
+          addSubBtn.onclick = (e) => {
+            e.stopPropagation();
+            addSubBulletRecursive(serviceIndex, bulletIndex, level);
+          };
+          controls.appendChild(addSubBtn);
+        }
+        
+        // Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'bullet-btn delete';
+        deleteBtn.textContent = '✕';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          deleteBulletRecursive(serviceIndex, bulletIndex, level);
+        };
+        controls.appendChild(deleteBtn);
+        
+        bulletSpan.appendChild(controls);
+      }
+      
+      // Handle children (sub-bullets) recursively
+      if (typeof item === 'object' && item.children && item.children.length > 0) {
+        const subUl = document.createElement('ul');
+        subUl.className = 'sub-bullet';
+        
+        item.children.forEach((childItem, childIndex) => {
+          const childLi = createBulletItemRecursive(
+            childItem,
+            serviceIndex,
+            `${bulletIndex}-${childIndex}`,
+            isDeletable,
+            level + 1
+          );
+          subUl.appendChild(childLi);
+        });
+        
+        li.appendChild(subUl);
+      }
+      
+      return li;
+    }
+
+    // Create bullet item with controls (legacy function - kept for compatibility)
     function createBulletItem(text, serviceIndex, bulletIndex, isDeletable, isSubBullet) {
       const li = document.createElement('li');
       
@@ -1272,7 +1430,181 @@
       populateServicesTable(window.proposalData.services);
     }
 
-    // Delete a bullet point
+    // Add sub-bullet recursively (supports 3 levels)
+    function addSubBulletRecursive(serviceIndex, bulletIndex, currentLevel) {
+      if (currentLevel >= 3) {
+        alert('Maximum nesting level (3) reached. Cannot add more sub-bullets.');
+        return;
+      }
+
+      const service = window.proposalData.services[serviceIndex];
+      const serviceInfo = findServiceInfo(service.name);
+      
+      const pathParts = bulletIndex.split('-');
+      const isDefault = pathParts[0] === 'default';
+      const isCustom = pathParts[0] === 'custom';
+      
+      if (isDefault) {
+        // Copy defaults to modifiedDefaults if not already done
+        if (!service.modifiedDefaults) {
+          service.modifiedDefaults = JSON.parse(JSON.stringify(serviceInfo ? serviceInfo.description : []));
+        }
+        
+        const indices = pathParts.slice(1).map(Number);
+        let target = service.modifiedDefaults;
+        
+        // Navigate to the parent bullet
+        for (let i = 0; i < indices.length; i++) {
+          const idx = indices[i];
+          
+          if (i === indices.length - 1) {
+            // This is the target bullet
+            if (typeof target[idx] === 'string') {
+              target[idx] = {
+                text: target[idx],
+                children: ['New sub-point']
+              };
+            } else if (target[idx].children) {
+              target[idx].children.push('New sub-point');
+            } else {
+              target[idx].children = ['New sub-point'];
+            }
+          } else {
+            // Navigate deeper
+            if (typeof target[idx] === 'object' && target[idx].children) {
+              target = target[idx].children;
+            }
+          }
+        }
+        
+        localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
+        populateServicesTable(window.proposalData.services);
+        return;
+      }
+      
+      if (isCustom) {
+        if (!service.customDescription) {
+          service.customDescription = [];
+        }
+        
+        const indices = pathParts.slice(1).map(Number);
+        let target = service.customDescription;
+        
+        // Navigate to the parent bullet
+        for (let i = 0; i < indices.length; i++) {
+          const idx = indices[i];
+          
+          if (i === indices.length - 1) {
+            // This is the target bullet
+            if (typeof target[idx] === 'string') {
+              // Convert string to object with children
+              target[idx] = {
+                text: target[idx],
+                children: ['New sub-point']
+              };
+            } else if (target[idx].children) {
+              // Add to existing children
+              target[idx].children.push('New sub-point');
+            } else {
+              // Initialize children array
+              target[idx].children = ['New sub-point'];
+            }
+          } else {
+            // Navigate deeper
+            if (typeof target[idx] === 'object' && target[idx].children) {
+              target = target[idx].children;
+            }
+          }
+        }
+      }
+      
+      localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
+      populateServicesTable(window.proposalData.services);
+    }
+
+    // Delete bullet recursively
+    function deleteBulletRecursive(serviceIndex, bulletIndex, level) {
+      if (!confirm('Delete this bullet point?')) return;
+      
+      const service = window.proposalData.services[serviceIndex];
+      const serviceInfo = findServiceInfo(service.name);
+      
+      const pathParts = bulletIndex.split('-');
+      const isDefault = pathParts[0] === 'default';
+      const isCustom = pathParts[0] === 'custom';
+      
+      if (isDefault) {
+        // Copy defaults to modifiedDefaults if not already done, then delete
+        if (!service.modifiedDefaults) {
+          service.modifiedDefaults = JSON.parse(JSON.stringify(serviceInfo ? serviceInfo.description : []));
+        }
+        
+        const indices = pathParts.slice(1).map(Number);
+        
+        if (indices.length === 1) {
+          // Top-level default bullet
+          service.modifiedDefaults.splice(indices[0], 1);
+        } else {
+          // Nested bullet - navigate to parent
+          let target = service.modifiedDefaults;
+          
+          for (let i = 0; i < indices.length - 1; i++) {
+            const idx = indices[i];
+            if (typeof target[idx] === 'object' && target[idx].children) {
+              if (i === indices.length - 2) {
+                // Parent of the target
+                target[idx].children.splice(indices[indices.length - 1], 1);
+                
+                // If no more children, convert back to string
+                if (target[idx].children.length === 0) {
+                  target[idx] = target[idx].text;
+                }
+              } else {
+                target = target[idx].children;
+              }
+            }
+          }
+        }
+        
+        localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
+        populateServicesTable(window.proposalData.services);
+        return;
+      }
+      
+      if (isCustom) {
+        const indices = pathParts.slice(1).map(Number);
+        
+        if (indices.length === 1) {
+          // Top-level custom bullet
+          service.customDescription.splice(indices[0], 1);
+        } else {
+          // Nested bullet - navigate to parent
+          let target = service.customDescription;
+          
+          for (let i = 0; i < indices.length - 1; i++) {
+            const idx = indices[i];
+            if (typeof target[idx] === 'object' && target[idx].children) {
+              if (i === indices.length - 2) {
+                // Parent of the target
+                target[idx].children.splice(indices[indices.length - 1], 1);
+                
+                // If no more children, convert back to string
+                if (target[idx].children.length === 0) {
+                  target[idx] = target[idx].text;
+                }
+              } else {
+                target = target[idx].children;
+              }
+            }
+          }
+        }
+      }
+      
+      localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
+      populateServicesTable(window.proposalData.services);
+    }
+
+    // Delete a bullet point (legacy function - kept for compatibility)
     function deleteBullet(serviceIndex, bulletIndex, li, isSubBullet) {
       if (!confirm('Delete this bullet point?')) return;
       
@@ -1314,15 +1646,61 @@
       const newValue = span.textContent.trim();
       
       if (window.proposalData && window.proposalData.services[serviceIndex]) {
+        const service = window.proposalData.services[serviceIndex];
+        
         if (field === 'quantity') {
-          window.proposalData.services[serviceIndex][field] = parseInt(newValue) || 1;
+          const quantity = parseInt(newValue) || 1;
+          service.quantity = quantity;
+          
+          // Only auto-update price if user hasn't manually set a custom price
+          if (!service.customPriceSet) {
+            const serviceInfo = findServiceInfo(service.name);
+            
+            // Priority: 1. Pricing tiers, 2. Default price, 3. Keep existing
+            if (serviceInfo && serviceInfo.pricingTiers) {
+              const tierPrice = getPriceForQuantity(serviceInfo.pricingTiers, quantity);
+              if (tierPrice !== null) {
+                service.unitPrice = tierPrice;
+                // Update the price display
+                const priceCell = span.closest('tr').querySelector('[data-field="unitPrice"]');
+                if (priceCell) {
+                  priceCell.textContent = tierPrice;
+                }
+              }
+            } else if (serviceInfo && serviceInfo.defaultPrice) {
+              // Use default price if no tiers exist
+              service.unitPrice = serviceInfo.defaultPrice;
+              const priceCell = span.closest('tr').querySelector('[data-field="unitPrice"]');
+              if (priceCell) {
+                priceCell.textContent = serviceInfo.defaultPrice;
+              }
+            }
+          }
         } else if (field === 'unitPrice') {
-          window.proposalData.services[serviceIndex][field] = parseFloat(newValue) || 0;
+          const price = parseFloat(newValue) || 0;
+          service.unitPrice = price;
+          service.customPriceSet = true; // Mark that user manually set the price
         }
+        
         // Update localStorage
         localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
         console.log(`Updated ${field} for service ${serviceIndex}:`, newValue);
       }
+    }
+
+    // Get price based on quantity from pricing tiers
+    function getPriceForQuantity(pricingTiers, quantity) {
+      if (!pricingTiers || pricingTiers.length === 0) return null;
+      
+      // Find the appropriate tier
+      for (let i = pricingTiers.length - 1; i >= 0; i--) {
+        if (quantity >= pricingTiers[i].quantity) {
+          return pricingTiers[i].price;
+        }
+      }
+      
+      // Default to first tier if quantity is less than minimum
+      return pricingTiers[0].price;
     }
 
     // Update bullet point when edited
@@ -1330,45 +1708,81 @@
       const span = event.target;
       const serviceIndex = parseInt(span.dataset.serviceIndex);
       const bulletIndex = span.dataset.bulletIndex;
-      const isSubBullet = span.dataset.isSubBullet === 'true';
+      const level = parseInt(span.dataset.level) || 0;
       const newValue = span.textContent.replace(/[+✕].*$/g, '').trim(); // Remove control buttons from text
       
       if (window.proposalData && window.proposalData.services[serviceIndex]) {
         const service = window.proposalData.services[serviceIndex];
         const serviceInfo = findServiceInfo(service.name);
-        const defaultLength = serviceInfo ? serviceInfo.description.length : 0;
         
-        // Only update custom bullets (not default ones)
-        if (bulletIndex >= defaultLength || isSubBullet) {
+        const pathParts = bulletIndex.split('-');
+        const isDefault = pathParts[0] === 'default';
+        const isCustom = pathParts[0] === 'custom';
+        
+        if (isDefault) {
+          // Allow editing default bullets - copy to modifiedDefaults
+          if (!service.modifiedDefaults) {
+            service.modifiedDefaults = JSON.parse(JSON.stringify(serviceInfo ? serviceInfo.description : []));
+          }
+          
+          const indices = pathParts.slice(1).map(Number);
+          let target = service.modifiedDefaults;
+          
+          // Navigate to the target bullet
+          for (let i = 0; i < indices.length; i++) {
+            const idx = indices[i];
+            
+            if (i === indices.length - 1) {
+              // This is the target bullet - update it
+              if (typeof target[idx] === 'object' && target[idx].text !== undefined) {
+                target[idx].text = newValue;
+              } else {
+                target[idx] = newValue;
+              }
+            } else {
+              // Navigate deeper
+              if (typeof target[idx] === 'object' && target[idx].children) {
+                target = target[idx].children;
+              }
+            }
+          }
+          
+          localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
+          console.log(`Updated default bullet ${bulletIndex} for service ${serviceIndex}:`, newValue);
+          return;
+        }
+        
+        if (isCustom) {
           if (!service.customDescription) {
             service.customDescription = [];
           }
           
-          if (isSubBullet) {
-            // Handle sub-bullet update
-            const [parentIndex, subIndex] = bulletIndex.split('-').map(Number);
-            const customIndex = parentIndex - defaultLength;
+          const indices = pathParts.slice(1).map(Number);
+          let target = service.customDescription;
+          
+          // Navigate to the target bullet
+          for (let i = 0; i < indices.length; i++) {
+            const idx = indices[i];
             
-            if (service.customDescription[customIndex] && service.customDescription[customIndex].children) {
-              service.customDescription[customIndex].children[subIndex] = newValue;
-            }
-          } else {
-            // Handle main bullet update
-            const customIndex = bulletIndex - defaultLength;
-            const currentBullet = service.customDescription[customIndex];
-            
-            // Preserve children if they exist
-            if (typeof currentBullet === 'object' && currentBullet.children) {
-              service.customDescription[customIndex].text = newValue;
+            if (i === indices.length - 1) {
+              // This is the target bullet - update it
+              if (typeof target[idx] === 'object' && target[idx].text !== undefined) {
+                target[idx].text = newValue;
+              } else {
+                target[idx] = newValue;
+              }
             } else {
-              service.customDescription[customIndex] = newValue;
+              // Navigate deeper
+              if (typeof target[idx] === 'object' && target[idx].children) {
+                target = target[idx].children;
+              }
             }
           }
-          
-          // Update localStorage
-          localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
-          console.log(`Updated bullet ${bulletIndex} for service ${serviceIndex}:`, newValue);
         }
+        
+        // Update localStorage
+        localStorage.setItem('proposalData', JSON.stringify(window.proposalData));
+        console.log(`Updated bullet ${bulletIndex} for service ${serviceIndex}:`, newValue);
       }
     }
 

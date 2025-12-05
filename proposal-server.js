@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -6,7 +7,7 @@ const fs = require('fs');
 const axios = require('axios');
 const { PureDocxProposalGenerator } = require('./pure-docx-generator');
 const https = require('https');
-
+const {getClientDetails} = require('./utils.js')
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -237,8 +238,6 @@ app.post('/api/generate-proposal', upload.any(), async (req, res) => {
     
   } catch (error) {
     console.error('❌ Error generating proposal:', error);
-    
-    // Clean up uploaded files on error
     if (req.files) {
       req.files.forEach(file => {
         try {
@@ -269,6 +268,7 @@ app.get('/api/download/:filename', (req, res) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Proposal Generator Server running on http://localhost:${PORT}`);
+  console.log(`${PORT}`)
   console.log(`📋 Form available at: http://localhost:${PORT}`);
   console.log(`🔗 API endpoint: http://localhost:${PORT}/api/generate-proposal`);
 });
